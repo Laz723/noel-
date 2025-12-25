@@ -42,6 +42,44 @@
             }
         }
 
+        /* Sélecteur de langue */
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid transparent;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
         /* Conteneur principal */
         .container {
             min-height: 100vh;
@@ -50,6 +88,7 @@
             justify-content: center;
             align-items: center;
             padding: 2rem;
+            padding-bottom: 8rem;
             position: relative;
             z-index: 1;
         }
@@ -357,6 +396,17 @@
             .result-message {
                 font-size: 1.4rem;
             }
+
+            .language-selector {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+
+            .lang-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
         }
 
         /* Étoiles scintillantes */
@@ -385,6 +435,13 @@
     </style>
 </head>
 <body>
+    <!-- Sélecteur de langue -->
+    <div class="language-selector">
+        <button class="lang-btn active" onclick="changeLanguage('fr')" data-lang="fr">🇫🇷 FR</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" data-lang="en">🇬🇧 EN</button>
+        <button class="lang-btn" onclick="changeLanguage('de')" data-lang="de">🇩🇪 DE</button>
+    </div>
+
     <!-- Lumières de Noël -->
     <div class="lights">
         <div class="light"></div>
@@ -407,12 +464,12 @@
                 🎄 ✨ 🎅 ⭐ 🎁
             </div>
             
-            <h1 class="title">Joyeux Noël</h1>
-            <p class="subtitle">Envoyez vos vœux magiques de Noël 2024</p>
+            <h1 class="title" id="title">Joyeux Noël</h1>
+            <p class="subtitle" id="subtitle">Envoyez vos vœux magiques de Noël 2024</p>
             
             <div class="form-container">
                 <div class="input-group">
-                    <label for="name">Votre Prénom</label>
+                    <label for="name" id="label">Votre Prénom</label>
                     <input 
                         type="text" 
                         id="name" 
@@ -421,7 +478,7 @@
                     >
                 </div>
                 
-                <button class="btn" onclick="generateMessage()">
+                <button class="btn" onclick="generateMessage()" id="btn">
                     🎅 Générer mon message de Noël
                 </button>
             </div>
@@ -429,7 +486,7 @@
             <div class="result" id="result">
                 <div class="result-emoji">🎄</div>
                 <div class="result-message" id="message"></div>
-                <button class="share-btn" onclick="shareMessage()">
+                <button class="share-btn" onclick="shareMessage()" id="shareBtn">
                     📤 Partager ce message
                 </button>
             </div>
@@ -438,12 +495,115 @@
 
     <!-- Footer -->
     <footer>
-        <p class="creator">✨ Créé avec ❤️ par Bolanidji GNAHOUAME ✨</p>
-        <p>&copy; 2024 - Tous droits réservés</p>
-        <p>Joyeux Noël à tous ! 🎄🎁</p>
+        <p class="creator">✨ <span id="footerCreated">Créé avec</span> ❤️ <span id="footerBy">par</span> Bolanidji GNAHOUAME ✨</p>
+        <p>&copy; 2024 - <span id="footerRights">Tous droits réservés</span></p>
+        <p id="footerGreeting">Joyeux Noël à tous ! 🎄🎁</p>
     </footer>
 
     <script>
+        // Traductions
+        const translations = {
+            fr: {
+                title: "Joyeux Noël",
+                subtitle: "Envoyez vos vœux magiques de Noël 2024",
+                label: "Votre Prénom",
+                placeholder: "Ex: Marie, Jean, Sarah...",
+                btn: "🎅 Générer mon message de Noël",
+                shareBtn: "📤 Partager ce message",
+                footerCreated: "Créé avec",
+                footerBy: "par",
+                footerRights: "Tous droits réservés",
+                footerGreeting: "Joyeux Noël à tous ! 🎄🎁",
+                alert: "🎅 Veuillez entrer votre prénom !",
+                copied: "✨ Message copié ! Vous pouvez le partager maintenant 🎄",
+                messages: [
+                    "🎄 {name} vous souhaite un Joyeux Noël rempli de magie et de bonheur ! ✨",
+                    "✨ {name} vous envoie ses meilleurs vœux pour un Noël merveilleux ! 🎁",
+                    "🎅 {name} vous souhaite un Joyeux Noël plein d'amour et de joie ! ❤️",
+                    "⭐ {name} vous transmet toute la magie de Noël ! Passez de merveilleuses fêtes ! 🎄",
+                    "🎁 {name} vous souhaite un Noël féerique entouré de vos proches ! ✨",
+                    "❄️ {name} vous envoie ses vœux les plus chaleureux pour ce Noël magique ! 🎅"
+                ]
+            },
+            en: {
+                title: "Merry Christmas",
+                subtitle: "Send your magical Christmas wishes 2024",
+                label: "Your First Name",
+                placeholder: "Ex: Mary, John, Sarah...",
+                btn: "🎅 Generate my Christmas message",
+                shareBtn: "📤 Share this message",
+                footerCreated: "Created with",
+                footerBy: "by",
+                footerRights: "All rights reserved",
+                footerGreeting: "Merry Christmas to all! 🎄🎁",
+                alert: "🎅 Please enter your first name!",
+                copied: "✨ Message copied! You can share it now 🎄",
+                messages: [
+                    "🎄 {name} wishes you a Merry Christmas filled with magic and happiness! ✨",
+                    "✨ {name} sends you the best wishes for a wonderful Christmas! 🎁",
+                    "🎅 {name} wishes you a Merry Christmas full of love and joy! ❤️",
+                    "⭐ {name} shares all the magic of Christmas with you! Have a wonderful holiday! 🎄",
+                    "🎁 {name} wishes you a magical Christmas surrounded by your loved ones! ✨",
+                    "❄️ {name} sends you the warmest wishes for this magical Christmas! 🎅"
+                ]
+            },
+            de: {
+                title: "Frohe Weihnachten",
+                subtitle: "Senden Sie Ihre magischen Weihnachtswünsche 2024",
+                label: "Ihr Vorname",
+                placeholder: "Z.B.: Maria, Hans, Sarah...",
+                btn: "🎅 Meine Weihnachtsbotschaft erstellen",
+                shareBtn: "📤 Diese Nachricht teilen",
+                footerCreated: "Erstellt mit",
+                footerBy: "von",
+                footerRights: "Alle Rechte vorbehalten",
+                footerGreeting: "Frohe Weihnachten an alle! 🎄🎁",
+                alert: "🎅 Bitte geben Sie Ihren Vornamen ein!",
+                copied: "✨ Nachricht kopiert! Sie können sie jetzt teilen 🎄",
+                messages: [
+                    "🎄 {name} wünscht Ihnen frohe Weihnachten voller Magie und Glück! ✨",
+                    "✨ {name} sendet Ihnen die besten Wünsche für ein wundervolles Weihnachtsfest! 🎁",
+                    "🎅 {name} wünscht Ihnen frohe Weihnachten voller Liebe und Freude! ❤️",
+                    "⭐ {name} übermittelt Ihnen die ganze Magie von Weihnachten! Schöne Feiertage! 🎄",
+                    "🎁 {name} wünscht Ihnen ein märchenhaftes Weihnachtsfest im Kreise Ihrer Lieben! ✨",
+                    "❄️ {name} sendet Ihnen die herzlichsten Wünsche für dieses magische Weihnachten! 🎅"
+                ]
+            }
+        };
+
+        let currentLang = 'fr';
+
+        // Changement de langue
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('label').textContent = t.label;
+            document.getElementById('name').placeholder = t.placeholder;
+            document.getElementById('btn').innerHTML = t.btn;
+            document.getElementById('shareBtn').innerHTML = t.shareBtn;
+            document.getElementById('footerCreated').textContent = t.footerCreated;
+            document.getElementById('footerBy').textContent = t.footerBy;
+            document.getElementById('footerRights').textContent = t.footerRights;
+            document.getElementById('footerGreeting').textContent = t.footerGreeting;
+            
+            // Mettre à jour les boutons de langue
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Régénérer le message si visible
+            const resultElement = document.getElementById('result');
+            if (resultElement.classList.contains('show')) {
+                generateMessage();
+            }
+        }
+
         // Création des flocons de neige
         function createSnowflakes() {
             const snowflakeCount = 50;
@@ -480,28 +640,22 @@
         function generateMessage() {
             const nameInput = document.getElementById('name');
             const name = nameInput.value.trim();
+            const t = translations[currentLang];
             
             if (name === '') {
-                alert('🎅 Veuillez entrer votre prénom !');
+                alert(t.alert);
                 nameInput.focus();
                 return;
             }
             
-            const messages = [
-                `🎄 ${name} vous souhaite un Joyeux Noël rempli de magie et de bonheur ! ✨`,
-                `✨ ${name} vous envoie ses meilleurs vœux pour un Noël merveilleux ! 🎁`,
-                `🎅 ${name} vous souhaite un Joyeux Noël plein d'amour et de joie ! ❤️`,
-                `⭐ ${name} vous transmet toute la magie de Noël ! Passez de merveilleuses fêtes ! 🎄`,
-                `🎁 ${name} vous souhaite un Noël féerique entouré de vos proches ! ✨`,
-                `❄️ ${name} vous envoie ses vœux les plus chaleureux pour ce Noël magique ! 🎅`
-            ];
-            
+            const messages = t.messages;
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            const finalMessage = randomMessage.replace('{name}', name);
             
             const messageElement = document.getElementById('message');
             const resultElement = document.getElementById('result');
             
-            messageElement.textContent = randomMessage;
+            messageElement.textContent = finalMessage;
             resultElement.classList.add('show');
             
             // Confettis effect
@@ -547,16 +701,17 @@
         // Partage du message
         function shareMessage() {
             const message = document.getElementById('message').textContent;
+            const t = translations[currentLang];
             
             if (navigator.share) {
                 navigator.share({
-                    title: 'Joyeux Noël 🎄',
+                    title: t.title + ' 🎄',
                     text: message
                 }).catch(err => console.log('Erreur de partage:', err));
             } else {
                 // Copier dans le presse-papier
                 navigator.clipboard.writeText(message).then(() => {
-                    alert('✨ Message copié ! Vous pouvez le partager maintenant 🎄');
+                    alert(t.copied);
                 });
             }
         }
